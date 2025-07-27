@@ -70,15 +70,27 @@ time.sleep_ms(100)
 rst.high()
 time.sleep_ms(100)
 
+write_command(0x01)  # Software reset
+time.sleep_ms(150)
+
 write_command(0x11)  # Sleep Exit
-time.sleep_ms(120)
+time.sleep_ms(255)
+
 
 # Memory Data Access Control
 # Write 0xC8 for BGR mode.
 write_command(0x36, 0xC0)
+# write_command(0x36, 0xC8)
 
-# Interface Pixel Format
+Interface Pixel Format
 write_command(0x3A, 0x05)
+
+write_command(0x3A, 0x05)
+time.sleep_ms(20)
+
+write_command(0x21)  # Invert colors
+time.sleep_ms(20)
+
 
 # Display On
 write_command(0x29)
