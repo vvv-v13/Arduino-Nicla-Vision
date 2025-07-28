@@ -29,46 +29,7 @@ spi = SPI(4, SPI.MASTER, baudrate=int(1000000000 / 66), polarity=0, phase=0)
 
 # Initialize display
 display = st7789.ST7789(spi, width, height, reset=reset, dc=dc, cs=cs, rotation=0)
-
-def write_command_byte(c):
-    cs.low()
-    dc.low()
-    spi.send(c)
-    cs.high()
-
-
-def write_data_byte(c):
-    cs.low()
-    dc.high()
-    spi.send(c)
-    cs.high()
-
-
-def write_command(c, *data):
-    write_command_byte(c)
-    if data:
-        for d in data:
-            write_data_byte(d)
-
-
-# Reset the LCD.
-reset.low()
-time.sleep_ms(100)
-reset.high()
-time.sleep_ms(100)
-
-write_command(0x11)  # Sleep Exit
-
-# Memory Data Access Control
-# Write 0xC8 for BGR mode.
-# write_command(0x36, 0xC0)
-
-# Interface Pixel Format
-write_command(0x3A, 0x05)
-
-# Display On
-write_command(0x29)
-
+display.sleep_mode(False)
 
 display.fill(st7789.BLACK)
 display.text(font, "SPI ST7789", 10, 10, color=0xF800)
@@ -79,4 +40,3 @@ time.sleep(1)
 display.text(font, "Say ...   ", 10, 170)
 time.sleep(1)
 display.text(font, "Say hello!", 10, 170)
-
