@@ -3,8 +3,7 @@ import time
 
 from machine import Pin, SPI
 
-# 1.3" TFT Display Module IPS LCD LED Screen 240X240 SPI Interface ST7789 Controller 3.3V
-# wihout cs pin
+# 1.69" TFT Display Module IPS LCD LED Screen 240X280 SPI Interface ST7789 Controller 3.3V
 
 # TFT       Nicla Vision
 # ----------------------
@@ -13,10 +12,12 @@ from machine import Pin, SPI
 # SDA       COPI
 # A0/DC     D1
 # RESET     D0
+# СS        CS
 # GND       GND
 # VCC       VDDIO_EXT
 
 
+cs = Pin("CS", Pin.OUT_OD)
 reset = Pin("D0", Pin.OUT_PP)
 dc = Pin("D1", Pin.OUT_PP)
 
@@ -25,13 +26,17 @@ spi = SPI(4, baudrate=int(1000000000 / 66), polarity=1, phase=1)
 
 
 def write_command_byte(c):
+    cs.low()
     dc.low()
     spi.write(bytes([c]))
+    cs.high()
 
 
 def write_data_byte(c):
+    cs.low()
     dc.high()
     spi.write(bytes([c]))
+    cs.high()
 
 
 def write_command(c, *data):
@@ -42,8 +47,12 @@ def write_command(c, *data):
 
 
 def write_image(img):
+    cs.low()
     dc.high()
+
     spi.write(img)
+
+    cs.high()
 
 
 # Reset the LCD.
@@ -52,13 +61,19 @@ time.sleep_ms(100)
 reset.high()
 time.sleep_ms(100)
 
+write_command(0x01)  # Soft reset
+
+
 write_command(0x11)  # Sleep Exit
 time.sleep_ms(120)
 
-write_command(0x3A, 0x55) # Pixel Format
-time.sleep_ms(20)
+
+# Interface Pixel Format
+write_command(0x3A, 0x55)
+time.sleep_ms(120)
 
 write_command(0x21)  # Invert colors
+time.sleep_ms(120)
 
 
 @micropython.asm_thumb
@@ -80,19 +95,18 @@ def byteswap(r0, r1): # bytearray, len(bytearray)
 
 # Display On
 write_command(0x29)
+time.sleep_ms(120)
 
 sensor.reset()  # Initialize the camera sensor.
 sensor.set_pixformat(sensor.RGB565)  # must be this
-sensor.set_framesize(sensor.QVGA)  # must be this
-sensor.set_windowing(240, 240)
+sensor.set_framesize(sensor.HVGA)  # must be this
+sensor.set_windowing(240, 320)
 sensor.skip_frames(time=2000)  # Let new settings take affect.
 clock = time.clock()  # Tracks FPS.
 
 while True:
     clock.tick()  # Track elapsed milliseconds between snapshots().
     img = sensor.snapshot()  # Take a picture and return the image.
-
-    # cropped_img = img.copy(roi=(0, 0, 240, 240))
 
     img_byte_array = img.bytearray()
     byteswap(img_byte_array,len(img_byte_array))
