@@ -24,12 +24,13 @@ cs = Pin("CS", Pin.OUT_OD)
 reset = Pin("D0", Pin.OUT_PP)
 dc = Pin("D1", Pin.OUT_PP)
 
-spi = SPI(4, SPI.MASTER, baudrate=int(1000000000 / 66), polarity=0, phase=0)
+spi = SPI(4, SPI.MASTER, baudrate=int(1000000000 / 66), polarity=1, phase=1)
 
 
 # Initialize display
 display = st7789.ST7789(spi, width, height, reset=reset, dc=dc, cs=cs, rotation=0)
 display.sleep_mode(False)
+
 
 display.fill(st7789.BLACK)
 display.text(font, "SPI ST7789", 10, 10, color=0xF800)
